@@ -3,8 +3,10 @@ namespace application\plugin\gsrc
 {
 	use nutshell\plugin\mvc\Controller;
 	use application\plugin\gsrc\GsrcException;
-	use application\plugin\mvcQuery\MvcQueryObject;
 	use application\plugin\mvcQuery\MvcQuery;
+	use application\plugin\mvcQuery\MvcQueryObject;
+	use application\plugin\mvcQuery\MvcQueryObjectData;
+	use application\plugin\btl\BtlRequestObject;
 	
 	/**
 	 * Provides Get / Set / Remove / Check functionality.
@@ -22,107 +24,64 @@ namespace application\plugin\gsrc
 		
 		
 		/*
-		 * Get / Set / Remove / Check handlers
+		 * GET
 		 */
 		
-		public function get($data, $options=null)
+		public function get($request)
 		{
+			$data = $request->getData();
 			if(is_array($data))
 			{
 				$result = array();
-				foreach($data as $block)
+				foreach($data as $individualRecord)
 				{
-					/*
-					 * todo: make this smarter. instead of a series of:
-					 * 'where a = b'
-					 * 'where a = c'
-					 * 'where x = y' etc.
-					 * 
-					 * make it:
-					 * where a in (b, c) OR x in (y)  etc.
-					 * 
-					 */
-					$result[] = $this->getIndividualRecord($block, $options);
+					$result[] = $this->getIndividualRecord($individualRecord);
 				}
 			}
 			else
 			{
-				$result = $this->getIndividualRecord($data, $options);
+				$result = $this->getIndividualRecord($data, $request);
 			}
 			
 			return $result;
 		}
 		
-		public function set($data)
+		private function getIndividualRecord($data, $request=null)
 		{
-			if(is_array($data))
-			{
-				$result = array();
-				foreach($data as $block)
-				{
-					$result[] = $this->setIndividualRecord($block);
-				}
-			}
-			else
-			{
-				$result = $this->setIndividualRecord($data);
-			}
-			
-			return $result;
-		}
-		
-		public function remove($data)
-		{
-			if(is_array($data))
-			{
-				$result = array();
-				foreach($data as $block)
-				{
-					$result[] = $this->removeIndividualRecord($block);
-				}
-			}
-			else
-			{
-				$result = $this->removeIndividualRecord($data);
-			}
-			
-			return $result;
-		}
-		
-		public function check($data)
-		{
-			return 0; // TODO See btl plugin's data structure doc (search "check") for spec.
-		}
-		
-		
-		
-		/*
-		 * Handlers for individual records
-		 */
-		
-		private function getIndividualRecord($data, $options=null)
-		{
-			$query = (is_array($options) && isset($options['query']) && isset($options['query']));
-			
-			$additionalPartSQL = '';
-			if(is_array($options) && isset($options['additionalPartSQL'])) $additionalPartSQL = $options['additionalPartSQL'];
-			
-			$readColumns = array();
-			if(is_array($options) && isset($options['readColumns'])) $readColumns = $options['readColumns'];
-			
-			$readColumnsRaw = (is_array($options) && isset($options['readColumnsRaw']) && $options['readColumnsRaw']);
+			if(!$request) $request = new BtlRequestObject();
 			
 			$tableName = $this->getTableName();
-			if(!$query) $this->performTypeCheck($data, $tableName);
 			
-			$queryObject = new MvcQueryObject();
+			$query = $request->getQuery();
+			if($query)
+			{
+				$data = array();
+				foreach($query as $key=>$val)
+				{
+					if($key[0] == '_')
+					{
+						$data[$key] = $val;
+					}
+					else
+					{
+						$data[$key] = array(MvcQueryObjectData::LIKE => $val);
+					}
+				}
+			}
+			elseif($data)
+			{
+				$this->performTypeCheck($data, $tableName);
+			}
+			else
+			{
+				// they passed in neither a 'data' nor a 'query' part, assume it's a query for everything
+				$query = true;
+			}
+			
+			$queryObject = new MvcQueryObject($query);
 			$queryObject->setType('select');
 			$queryObject->setTable($tableName);
 			$queryObject->setWhere($data);
-			$queryObject->setAdditionalPartSQL($additionalPartSQL);
-			$queryObject->setReadColumns($readColumns);
-			$queryObject->setReadColumnsRaw($readColumnsRaw);
-			$queryObject->setLoose($query);
 			
 			$result = $this->plugin->MvcQuery->query($queryObject);
 			
@@ -142,32 +101,64 @@ namespace application\plugin\gsrc
 				$result['_type'] = $data->_type;
 			}
 			
+			// $result['_query'] = $this->plugin->MvcQuery->db->getLastQueryObject();
+			// $result['_query'] = $result['_query']['sql'];
 			return $result; 
 		}
 		
-		private function setIndividualRecord($data)
+		
+		
+		/*
+		 * SET
+		 */
+		
+		public function set($request)
 		{
+			$data = $request->getData();
+			if(is_array($data))
+			{
+				$result = array();
+				foreach($data as $individualRecord)
+				{
+					$result[] = $this->setIndividualRecord($individualRecord);
+				}
+			}
+			else
+			{
+				$result = $this->setIndividualRecord($data, $request);
+			}
+			
+			return $result;
+		}
+		
+		private function setIndividualRecord($data, $request=null)
+		{
+			if(!$request) $request = new BtlRequestObject();
+			
 			$tableName = $this->getTableName();
 			$this->performTypeCheck($data, $tableName);
 			
-			$queryType = 'insert';
-			if(isset($data->id) && $data->id) $queryType='update';
-			
-			$queryObject = new MvcQueryObject();
-			$queryObject->setType($queryType);
+			$queryObject = new MvcQueryObject($data);
 			$queryObject->setTable($tableName);
 			$queryObject->setWhere($data);
+			if(isset($data->id) && $data->id)
+			{
+				$queryObject->setType('update');
+			}
+			else
+			{
+				$queryObject->setType('insert');
+			}
 			
 			$result = $this->plugin->MvcQuery->query($queryObject);
 			
-			// Get the full row, return that.
-			if($queryType=='insert')
+			if($queryObject->getType()=='insert')
 			{
 				$data->id = $result;
 			}
 			
 			// Create a dummy request object which is the same object we would have gotten from json_decoding a 'get' request
-			$record = new \stdClass(); 
+			$record = new \stdClass();
 			$record->_type = $data->_type;
 			$record->id = $data->id;
 			
@@ -175,7 +166,31 @@ namespace application\plugin\gsrc
 			return $result;
 		}
 		
-		private function removeIndividualRecord($data)
+		
+		/*
+		 * REMOVE
+		 */
+		
+		public function remove($request)
+		{
+			$data = $request->getData();
+			if(is_array($data))
+			{
+				$result = array();
+				foreach($data as $individualRecord)
+				{
+					$result[] = $this->removeIndividualRecord($individualRecord);
+				}
+			}
+			else
+			{
+				$result = $this->removeIndividualRecord($data, $request);
+			}
+			
+			return $result;
+		}
+		
+		private function removeIndividualRecord($data, $request=null)
 		{
 			$tableName = $this->getTableName();
 			$this->performTypeCheck($data, $tableName);
@@ -193,8 +208,27 @@ namespace application\plugin\gsrc
 			return $result; 
 		}
 		
+		
+		
+		/*
+		 * CHECK
+		 */
+		
+		
+		public function check($data)
+		{
+			return 0; // TODO See btl plugin's data structure doc (search "check") for spec.
+		}
+		
+		
+		
+		/*
+		 * UTILITY FUNCTIONS
+		 */
+		
 		private function performTypeCheck($data, $modelName)
 		{
+			
 			if(!isset($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, 'type not defined');
 			
 			// If the model name has any number of backslashes, just get the last part
@@ -203,6 +237,17 @@ namespace application\plugin\gsrc
 			
 			if(strtolower($modelName) !== strtolower($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, "[$data->_type] is not [$modelName]");
 		}
+		
+		/*
+		 * A Helper function to make calling a query directly a little easier.
+		 */
+		protected function getResultFromQuery(/* query, list of vals */)
+		{
+			return call_user_func_array
+			(
+				array($this->plugin->MvcQuery->db, 'getResultFromQuery'),
+				func_get_args()
+			);
+		}
 	}
 }
-?>

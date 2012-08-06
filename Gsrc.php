@@ -5,7 +5,7 @@ namespace application\plugin\gsrc
 	use nutshell\Nutshell;
 	
 	/**
-	 * Gsrc. The Get/Set/Remove/Check alternative to CRUD
+	 * GSRC. The Get/Set/Remove/Check alternative to CRUD
 	 * @author Dean Rather
 	 */
 	class Gsrc extends LibraryPlugin
