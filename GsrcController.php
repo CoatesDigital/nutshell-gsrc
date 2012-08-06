@@ -7,6 +7,10 @@ namespace application\plugin\gsrc
 	use application\plugin\mvcQuery\MvcQueryObject;
 	use application\plugin\mvcQuery\MvcQueryObjectData;
 	use application\plugin\btl\BtlRequestObject;
+	use nutshell\Nutshell;
+	
+	// Nutshell::getInstance()->plugin->Gsrc;
+	
 	
 	/**
 	 * Provides Get / Set / Remove / Check functionality.
