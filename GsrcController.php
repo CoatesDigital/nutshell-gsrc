@@ -232,7 +232,7 @@ namespace application\plugin\gsrc
 			if(!isset($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, 'type not defined');
 			
 			// If the model name has any number of backslashes, just get the last part
-			$modelName = explode('\\', $modelName);
+			$modelName = explode('/', $modelName);
 			$modelName = $modelName[sizeof($modelName)-1];
 			
 			if(strtolower($modelName) !== strtolower($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, "[$data->_type] is not [$modelName]");
