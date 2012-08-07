@@ -21,7 +21,7 @@ namespace application\plugin\gsrc
 	abstract class GsrcController extends Controller
 	{
 		/**
-		 * You must return the tableName
+		 * You must return the modelName
 		 */
 		abstract function getModelName();
 		
@@ -54,7 +54,8 @@ namespace application\plugin\gsrc
 		{
 			if(!$request) $request = new BtlRequestObject();
 			
-			$tableName = $this->getModelName();
+			$model = $this->getModel();
+			$tableName = $this->getTableName();
 			
 			$query = $request->getQuery();
 			if($query)
@@ -84,7 +85,7 @@ namespace application\plugin\gsrc
 			
 			$queryObject = new MvcQueryObject($query);
 			$queryObject->setType('select');
-			$queryObject->setTable($tableName);
+			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
 			
 			$result = $this->plugin->MvcQuery->query($queryObject);
@@ -136,11 +137,12 @@ namespace application\plugin\gsrc
 		{
 			if(!$request) $request = new BtlRequestObject();
 			
-			$tableName = $this->getModelName();
+			$tableName = $this->getTableName();
+			$model = $this->getModel();
 			$this->performTypeCheck($data, $tableName);
 			
 			$queryObject = new MvcQueryObject($data);
-			$queryObject->setTable($tableName);
+			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
 			if(isset($data->id) && $data->id)
 			{
@@ -193,12 +195,13 @@ namespace application\plugin\gsrc
 		
 		private function removeIndividualRecord($data, $request=null)
 		{
-			$tableName = $this->getModelName();
+			$tableName = $this->getTableName();
+			$model = $this->getModel();
 			$this->performTypeCheck($data, $tableName);
 			
 			$queryObject = new MvcQueryObject();
 			$queryObject->setType('delete');
-			$queryObject->setTable($tableName);
+			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
 			
 			$affected = $this->plugin->MvcQuery->query($queryObject);
@@ -229,14 +232,9 @@ namespace application\plugin\gsrc
 		
 		private function performTypeCheck($data, $modelName)
 		{
-			
+			$tableName = $this->getTableName();
 			if(!isset($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, 'type not defined');
-			
-			// If the model name has any number of backslashes, just get the last part
-			$modelName = explode('/', $modelName);
-			$modelName = $modelName[sizeof($modelName)-1];
-			
-			if(strtolower($modelName) !== strtolower($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, "[$data->_type] is not [$modelName]");
+			if($tableName !== $data->_type) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, "[$data->_type] is not [$tableName]");
 		}
 		
 		/*
@@ -251,13 +249,32 @@ namespace application\plugin\gsrc
 			);
 		}
 		
+		/**
+		 * Takes the modelName and returns the actual model
+		 */
+		public function getModel()
+		{
+			$parts = explode('/', $this->getModelName());
+			$model = $this->model;
+			foreach($parts as $part)
+			{
+				$model = $model->$part;
+			}
+			return $model;
+		}
+		
+		public function getTableName()
+		{
+			$model = $this->getModel();
+			return $model->name;
+		}
+		
 		/*
 		 * A Helper function to pass through get's response, and explode _options out into objects
 		 */
 		protected function parseOptions($results, $keyvalSeparator, $recordSeparator)
 		{
-			$tableName = explode('/', $this->getModelName());
-			$tableName = $tableName[sizeof($tableName)-1];
+			$tableName = $this->getTableName();
 			
 			$return = array();
 			foreach($results as $record)
@@ -274,9 +291,9 @@ namespace application\plugin\gsrc
 						 {
 						 	$blob = explode($keyvalSeparator, $blob);
 						 	$option = array();
-						 	$option['id'] = $blob[0];
-						 	$option['name'] = $blob[1];
-						 	$option['_type'] = $tableName;
+							$option['_type']	= $blob[0];
+							$option['id']		= $blob[1];
+							$option['name']		= $blob[2];
 						 	$options[] = $option;
 						 }
 						 
