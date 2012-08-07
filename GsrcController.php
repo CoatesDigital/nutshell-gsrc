@@ -104,9 +104,6 @@ namespace application\plugin\gsrc
 				$result = $result[0];
 				$result['_type'] = $data->_type;
 			}
-			
-			// $result['_query'] = $this->plugin->MvcQuery->db->getLastQueryObject();
-			// $result['_query'] = $result['_query']['sql'];
 			return $result; 
 		}
 		
@@ -252,6 +249,44 @@ namespace application\plugin\gsrc
 				array($this->plugin->MvcQuery->db, 'getResultFromQuery'),
 				func_get_args()
 			);
+		}
+		
+		/*
+		 * A Helper function to pass through get's response, and explode _options out into objects
+		 */
+		protected function parseOptions($results, $keyvalSeparator, $recordSeparator)
+		{
+			$tableName = explode('/', $this->getTableName());
+			$tableName = $tableName[sizeof($tableName)-1];
+			
+			$return = array();
+			foreach($results as $record)
+			{
+				foreach($record as $col => $val)
+				{
+					// If this col is a list of options
+					if(substr($col, -8)=='_options')
+					{
+						// Each option needs an id and a name
+						 $options = array();
+						 $tmpOptions = explode($recordSeparator, $val);
+						 foreach ($tmpOptions as $blob)
+						 {
+						 	$blob = explode($keyvalSeparator, $blob);
+						 	$option = array();
+						 	$option['id'] = $blob[0];
+						 	$option['name'] = $blob[1];
+						 	$option['_type'] = $tableName;
+						 	$options[] = $option;
+						 }
+						 
+						 $record[$col] = $options;
+					}
+				}
+				$return[] = $record;
+			}
+			
+			return $return;
 		}
 	}
 }
