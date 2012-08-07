@@ -15,7 +15,7 @@ namespace application\plugin\gsrc
 		/** When getting an individual result, 1 result is expected. No more, No less */
 		const INVALID_NUMBER_OF_RESULTS = 2;
 		
-		/** Any controller who extends GSRC must provide the table name in getTableName() */
+		/** Any controller who extends GSRC must provide the table name in getModelName() */
 		const TABLE_NAME_NOT_DEFINED = 3;
 		
 		/** 'type' must be one of 'select', 'insert', 'update', 'delete' */

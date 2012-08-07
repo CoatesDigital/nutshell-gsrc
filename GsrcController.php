@@ -23,7 +23,7 @@ namespace application\plugin\gsrc
 		/**
 		 * You must return the tableName
 		 */
-		abstract function getTableName();
+		abstract function getModelName();
 		
 		
 		
@@ -54,7 +54,7 @@ namespace application\plugin\gsrc
 		{
 			if(!$request) $request = new BtlRequestObject();
 			
-			$tableName = $this->getTableName();
+			$tableName = $this->getModelName();
 			
 			$query = $request->getQuery();
 			if($query)
@@ -136,7 +136,7 @@ namespace application\plugin\gsrc
 		{
 			if(!$request) $request = new BtlRequestObject();
 			
-			$tableName = $this->getTableName();
+			$tableName = $this->getModelName();
 			$this->performTypeCheck($data, $tableName);
 			
 			$queryObject = new MvcQueryObject($data);
@@ -193,7 +193,7 @@ namespace application\plugin\gsrc
 		
 		private function removeIndividualRecord($data, $request=null)
 		{
-			$tableName = $this->getTableName();
+			$tableName = $this->getModelName();
 			$this->performTypeCheck($data, $tableName);
 			
 			$queryObject = new MvcQueryObject();
@@ -256,7 +256,7 @@ namespace application\plugin\gsrc
 		 */
 		protected function parseOptions($results, $keyvalSeparator, $recordSeparator)
 		{
-			$tableName = explode('/', $this->getTableName());
+			$tableName = explode('/', $this->getModelName());
 			$tableName = $tableName[sizeof($tableName)-1];
 			
 			$return = array();
