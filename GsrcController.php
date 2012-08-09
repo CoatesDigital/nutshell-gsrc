@@ -151,15 +151,18 @@ namespace application\plugin\gsrc
 				$queryObject->setType('insert');
 			}
 			
-			$affected = $this->plugin->MvcQuery->query($queryObject);
+			$result = $this->plugin->MvcQuery->query($queryObject);
 			
 			if($queryObject->getType()=='insert')
 			{
 				$data->id = $result;
 			}
+			else
+			{
+				$data->_affected = $result;
+			}
 			
-			// return .get() (with the affected rows count attached)
-			$data->_affected = $affected;
+			// return .get()
 			$result = $this->getIndividualRecord($data);
 			
 			return $data;
