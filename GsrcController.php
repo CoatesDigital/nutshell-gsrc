@@ -39,7 +39,7 @@ namespace application\plugin\gsrc
 				$result = array();
 				foreach($data as $individualRecord)
 				{
-					$result[] = $this->getIndividualRecord($individualRecord);
+					$result[] = $this->getIndividualRecord($individualRecord, $request);
 				}
 			}
 			else
@@ -127,16 +127,14 @@ namespace application\plugin\gsrc
 			}
 			else
 			{
-				$result = $this->setIndividualRecord($data, $request);
+				$result = $this->setIndividualRecord($data);
 			}
 			
 			return $result;
 		}
 		
-		private function setIndividualRecord($data, $request=null)
+		private function setIndividualRecord($data)
 		{
-			if(!$request) $request = new BtlRequestObject();
-			
 			$tableName = $this->getTableName();
 			$model = $this->getModel();
 			$this->performTypeCheck($data, $tableName);
@@ -153,20 +151,18 @@ namespace application\plugin\gsrc
 				$queryObject->setType('insert');
 			}
 			
-			$result = $this->plugin->MvcQuery->query($queryObject);
+			$affected = $this->plugin->MvcQuery->query($queryObject);
 			
 			if($queryObject->getType()=='insert')
 			{
 				$data->id = $result;
 			}
 			
-			// Create a dummy request object which is the same object we would have gotten from json_decoding a 'get' request
-			$record = new \stdClass();
-			$record->_type = $data->_type;
-			$record->id = $data->id;
+			// return .get() (with the affected rows count attached)
+			$data->_affected = $affected;
+			$result = $this->getIndividualRecord($data);
 			
-			$result = $this->getIndividualRecord($record);
-			return $result;
+			return $data;
 		}
 		
 		
@@ -187,13 +183,13 @@ namespace application\plugin\gsrc
 			}
 			else
 			{
-				$result = $this->removeIndividualRecord($data, $request);
+				$result = $this->removeIndividualRecord($data);
 			}
 			
 			return $result;
 		}
 		
-		private function removeIndividualRecord($data, $request=null)
+		private function removeIndividualRecord($data)
 		{
 			$tableName = $this->getTableName();
 			$model = $this->getModel();
