@@ -122,18 +122,18 @@ namespace application\plugin\gsrc
 				$result = array();
 				foreach($data as $individualRecord)
 				{
-					$result[] = $this->setIndividualRecord($individualRecord);
+					$result[] = $this->setIndividualRecord($individualRecord, $request);
 				}
 			}
 			else
 			{
-				$result = $this->setIndividualRecord($data);
+				$result = $this->setIndividualRecord($data, $request);
 			}
 			
 			return $result;
 		}
 		
-		private function setIndividualRecord($data)
+		private function setIndividualRecord($data, $request)
 		{
 			$tableName = $this->getTableName();
 			$model = $this->getModel();
@@ -157,15 +157,20 @@ namespace application\plugin\gsrc
 			{
 				$data->id = $result;
 			}
-			else
-			{
-				$data->_affected = $result;
-			}
 			
 			// return .get()
-			$result = $this->getIndividualRecord($data);
+			$request->setQuery($data);
+			$response = $this->get($request);
 			
-			return $data;
+			if($queryObject->getType()=='update')
+			{
+				if(sizeof($response==1))
+				{
+					$response[0]['_affected'] = $result;
+				}
+			}
+			
+			return $response;
 		}
 		
 		
@@ -253,13 +258,7 @@ namespace application\plugin\gsrc
 		 */
 		public function getModel()
 		{
-			$parts = explode('/', $this->getModelName());
-			$model = $this->model;
-			foreach($parts as $part)
-			{
-				$model = $model->$part;
-			}
-			return $model;
+			return $this->plugin->MvcQuery->getModel($this->getModelName());
 		}
 		
 		public function getTableName()
