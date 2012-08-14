@@ -135,13 +135,17 @@ namespace application\plugin\gsrc
 		
 		private function setIndividualRecord($data, $request)
 		{
+			// Some sanity checking
 			$tableName = $this->getTableName();
-			$model = $this->getModel();
 			$this->performTypeCheck($data, $tableName);
 			
+			// Create the Query Object
+			$model = $this->getModel();
 			$queryObject = new MvcQueryObject($data);
 			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
+			
+			// Insert or Update
 			if(isset($data->id) && $data->id)
 			{
 				$queryObject->setType('update');
@@ -151,11 +155,17 @@ namespace application\plugin\gsrc
 				$queryObject->setType('insert');
 			}
 			
+			
+			// Set It
 			$result = $this->plugin->MvcQuery->query($queryObject);
+			
+			
 			
 			if($queryObject->getType()=='insert')
 			{
+				$data = new MvcQueryObjectData();
 				$data->id = $result;
+				$data->_type = $tableName;
 			}
 			
 			// return .get()
