@@ -169,7 +169,7 @@ namespace application\plugin\gsrc
 			}
 			
 			// return .get()
-			$request->setQuery($data);
+			$request->setData($data);
 			$response = $this->get($request);
 			
 			if($queryObject->getType()=='update')
