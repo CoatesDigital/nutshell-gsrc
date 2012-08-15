@@ -49,9 +49,22 @@ namespace application\plugin\gsrc
 			
 			return $result;
 		}
+
+		protected function onBeforeGet(&$data)
+		{
+			// Do nothing
+		}
+
+		protected function onAfterGet(&$data)
+		{
+			// Do nothing
+		}
 		
 		private function getIndividualRecord($data, $request=null)
 		{
+			// Trigger a get hook
+			$this->onBeforeGet($data);
+
 			if(!$request) $request = new BtlRequestObject();
 			
 			$model = $this->getModel();
@@ -92,19 +105,31 @@ namespace application\plugin\gsrc
 			
 			if(!$query) {
 				//TODO What do we want to do if there are no results?
-				if(sizeof($result) == 0) return false;
-				if(sizeof($result) != 1) throw new GsrcException
-				(
-					GsrcException::INVALID_NUMBER_OF_RESULTS,
-					'RESULT:',
-					$result,
-					'LAST QUERY:',
-					$this->plugin->MvcQuery->db->getLastQueryObject()
-				);
+				if(sizeof($result) == 0)
+				{
+					// Trigger a get hook
+					$this->onAfterGet($data);
+					return false;
+				}
+				if(sizeof($result) != 1)
+				{ 
+					throw new GsrcException
+					(
+						GsrcException::INVALID_NUMBER_OF_RESULTS,
+						'RESULT:',
+						$result,
+						'LAST QUERY:',
+						$this->plugin->MvcQuery->db->getLastQueryObject()
+					);
+				}
 				
 				$result = $result[0];
 				$result['_type'] = $data->_type;
 			}
+
+			// Trigger a get hook
+			$this->onAfterGet($data);
+
 			return $result; 
 		}
 		
@@ -132,9 +157,22 @@ namespace application\plugin\gsrc
 			
 			return $result;
 		}
+
+		protected function onBeforeSet(&$data)
+		{
+			// Do nothing
+		}
+
+		protected function onAfterSet(&$data)
+		{
+			// Do nothing
+		}
 		
 		private function setIndividualRecord($data, $request)
 		{
+			// Trigger a set hook
+			$this->onBeforeSet($data);
+
 			// Some sanity checking
 			$tableName = $this->getTableName();
 			$this->performTypeCheck($data, $tableName);
@@ -159,14 +197,15 @@ namespace application\plugin\gsrc
 			// Set It
 			$result = $this->plugin->MvcQuery->query($queryObject);
 			
-			
-			
 			if($queryObject->getType()=='insert')
 			{
 				$data = new MvcQueryObjectData();
 				$data->id = $result;
 				$data->_type = $tableName;
 			}
+
+			// Trigger a set hook
+			$this->onAfterSet($data);
 			
 			// return .get()
 			$request->setData($data);
@@ -176,13 +215,12 @@ namespace application\plugin\gsrc
 			{
 				if(sizeof($response==1))
 				{
-					$response[0]['_affected'] = $result;
+					$response['_affected'] = $result;
 				}
 			}
 			
 			return $response;
 		}
-		
 		
 		/*
 		 * REMOVE
@@ -206,9 +244,22 @@ namespace application\plugin\gsrc
 			
 			return $result;
 		}
+
+		protected function onBeforeRemove(&$data)
+		{
+			// Do nothing
+		}
+
+		protected function onAfterRemove(&$data)
+		{
+			// Do nothing
+		}
 		
 		private function removeIndividualRecord($data)
 		{
+			// Trigger a remove hook
+			$this->onBeforeRemove($data);
+
 			$tableName = $this->getTableName();
 			$model = $this->getModel();
 			$this->performTypeCheck($data, $tableName);
@@ -221,6 +272,10 @@ namespace application\plugin\gsrc
 			$affected = $this->plugin->MvcQuery->query($queryObject);
 			
 			$data->_affected = $affected;
+
+			// Trigger a remove hook
+			$this->onAfterRemove($data);
+
 			$result = (array)$data;
 			
 			return $result; 
