@@ -59,6 +59,11 @@ namespace application\plugin\gsrc
 		{
 			// Do nothing
 		}
+
+		protected function configureReadFields(&$queryObject)
+		{
+			// Do nothing
+		}
 		
 		private function getIndividualRecord($data, $request=null)
 		{
@@ -100,6 +105,7 @@ namespace application\plugin\gsrc
 			$queryObject->setType('select');
 			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
+			$this->configureReadFields($queryObject);
 			
 			$result = $this->plugin->MvcQuery->query($queryObject);
 			
