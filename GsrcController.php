@@ -89,6 +89,11 @@ namespace application\plugin\gsrc
 					{
 						$data[$key] = array(MvcQueryObjectData::LIKE => $val);
 					}
+					
+					if($val===null)
+					{
+						$data[$key] = array(MvcQueryObjectData::IS => null);
+					}
 				}
 			}
 			elseif($data)
