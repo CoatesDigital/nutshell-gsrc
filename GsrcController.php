@@ -307,7 +307,9 @@ namespace application\plugin\gsrc
 		
 		private function performTypeCheck($data, $modelName)
 		{
-			$tableName = $this->getTableName();
+			$model = $this->getModel();
+			$tableName = $model->name;
+			if(isset($model->originalName)) $tableName = $model->originalName;
 			if(!isset($data->_type)) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, 'type not defined');
 			if($tableName !== $data->_type) throw new GsrcException(GsrcException::TYPE_CHECK_FAIL, "[$data->_type] is not [$tableName]");
 		}
