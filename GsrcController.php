@@ -207,19 +207,24 @@ namespace application\plugin\gsrc
 			
 			// Set It
 			$result = $this->plugin->MvcQuery->query($queryObject);
-			
-			if($queryObject->getType()=='insert')
-			{
-				$data = new MvcQueryObjectData();
-				$data->id = $result;
-				$data->_type = $tableName;
-			}
 
 			// Trigger a set hook
-			$this->onAfterSet($data);
+			$this->onAfterSet($result);			
+			
+			
+			$newRequestData = new MvcQueryObject();
+			$newRequestData->_type = $tableName;
+			if($queryObject->getType()=='insert')
+			{
+				$newRequestData->id = $result;
+			}
+			else
+			{
+				$newRequestData->id = $data->id;
+			}
 			
 			// return .get()
-			$request->setData($data);
+			$request->setQuery($newRequestData);
 			$response = $this->get($request);
 			
 			if($queryObject->getType()=='update')
