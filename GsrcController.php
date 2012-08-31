@@ -227,13 +227,14 @@ namespace application\plugin\gsrc
 			$request->setQuery($newRequestData);
 			$response = $this->get($request);
 			
-			if($queryObject->getType()=='update')
-			{
-				if(sizeof($response==1))
-				{
-					$response['_affected'] = $result;
-				}
-			}
+			// // neat feature, maybe move it further downstream though. it breaks the arrays when they're json_encoded
+			// if($queryObject->getType()=='update')
+			// {
+			// 	if(sizeof($response==1))
+			// 	{
+			// 		$response['_affected'] = $result;
+			// 	}
+			// }
 			
 			return $response;
 		}
