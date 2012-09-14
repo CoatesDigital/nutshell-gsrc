@@ -372,11 +372,14 @@ namespace application\plugin\gsrc
 						 foreach ($tmpOptions as $blob)
 						 {
 						 	$blob = explode($keyvalSeparator, $blob);
-						 	$option = array();
-							$option['_type']	= $blob[0];
-							$option['id']		= $blob[1];
-							$option['name']		= $blob[2];
-						 	$options[] = $option;
+						 	if(sizeof($blob)==3)
+						 	{
+							 	$option = array();
+								$option['_type']	= $blob[0];
+								$option['id']		= $blob[1];
+								$option['name']		= $blob[2];
+							 	$options[] = $option;
+							 }
 						 }
 						 
 						 $record[$col] = $options;
