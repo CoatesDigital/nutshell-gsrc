@@ -50,7 +50,7 @@ namespace application\plugin\gsrc
 			return $result;
 		}
 
-		protected function onBeforeGet(&$data)
+		protected function onBeforeGet(&$data, &$request)
 		{
 			// Do nothing
 		}
@@ -68,7 +68,7 @@ namespace application\plugin\gsrc
 		private function getIndividualRecord($data, $request=null)
 		{
 			// Trigger a get hook
-			$this->onBeforeGet($data);
+			$this->onBeforeGet($data, $request);
 
 			if(!$request) $request = new BtlRequestObject();
 			
