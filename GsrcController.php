@@ -8,6 +8,7 @@ namespace application\plugin\gsrc
 	use application\plugin\mvcQuery\MvcQueryObjectData;
 	use application\plugin\btl\BtlRequestObject;
 	use nutshell\Nutshell;
+	use nutshell\plugin\db\exception\DbException;
 	
 	// Nutshell::getInstance()->plugin->Gsrc;
 	
@@ -286,10 +287,16 @@ namespace application\plugin\gsrc
 			$queryObject->setModel($model);
 			$queryObject->setWhere($data);
 			
-			$affected = $this->plugin->MvcQuery->query($queryObject);
+			try
+			{
+				$affected = $this->plugin->MvcQuery->query($queryObject);
+				$data->_affected = $affected;
+			}
+			catch(DbException $e)
+			{
+				$data->_affected = 0;
+			}
 			
-			$data->_affected = $affected;
-
 			// Trigger a remove hook
 			$this->onAfterRemove($data);
 
