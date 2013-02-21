@@ -228,16 +228,7 @@ namespace application\plugin\gsrc
 			$request = new BtlRequestObject();
 			$request->setQuery($newRequestData);
 			$response = $this->get($request);
-			
-			// // neat feature, maybe move it further downstream though. it breaks the arrays when they're json_encoded
-			// if($queryObject->getType()=='update')
-			// {
-			// 	if(sizeof($response==1))
-			// 	{
-			// 		$response['_affected'] = $result;
-			// 	}
-			// }
-			
+			$response = $response[0];
 			return $response;
 		}
 		
