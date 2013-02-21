@@ -225,6 +225,7 @@ namespace application\plugin\gsrc
 			}
 			
 			// return .get()
+			$request = new BtlRequestObject();
 			$request->setQuery($newRequestData);
 			$response = $this->get($request);
 			
