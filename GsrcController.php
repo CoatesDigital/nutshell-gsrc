@@ -350,38 +350,24 @@ namespace application\plugin\gsrc
 			return $model->name;
 		}
 		
-		/*
-		 * A Helper function to pass through get's response, and explode _options out into objects
-		 */
-		protected function parseOptions($results, $keyvalSeparator, $recordSeparator)
+		protected function parseOptions($results, $aggregateColumns)
 		{
 			$tableName = $this->getTableName();
 			
 			$return = array();
 			foreach($results as $record)
 			{
-				foreach($record as $col => $val)
+				if(!isset($record['id'])) return $results;
+				$id = $record['id'];
+				foreach($aggregateColumns as $aggregateColumnName => $aggregateColumnQuery)
 				{
-					// If this col is a list of options
-					if(substr($col, -8)=='_options')
+					if($record['_has'.$aggregateColumnName])
 					{
-						// Each option needs an id and a name
-						 $options = array();
-						 $tmpOptions = explode($recordSeparator, $val);
-						 foreach ($tmpOptions as $blob)
-						 {
-						 	$blob = explode($keyvalSeparator, $blob);
-						 	if(sizeof($blob)==3)
-						 	{
-							 	$option = array();
-								$option['_type']	= $blob[0];
-								$option['id']		= $blob[1];
-								$option['name']		= $blob[2];
-							 	$options[] = $option;
-							 }
-						 }
-						 
-						 $record[$col] = $options;
+						$record[$aggregateColumnName] = $this->getResultFromQuery($aggregateColumnQuery, $id);
+					}
+					else
+					{
+						$record[$aggregateColumnName] = array();
 					}
 				}
 				$return[] = $record;
