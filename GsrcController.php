@@ -335,6 +335,11 @@ namespace application\plugin\gsrc
 				func_get_args()
 			);
 		}
+
+		protected function debug()
+		{
+			var_dump($this->plugin->MvcQuery->db->debug());
+		}
 		
 		/**
 		 * Takes the modelName and returns the actual model
