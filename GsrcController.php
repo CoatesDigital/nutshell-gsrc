@@ -228,7 +228,10 @@ namespace application\plugin\gsrc
 			$request = new BtlRequestObject();
 			$request->setQuery($newRequestData);
 			$response = $this->get($request);
-			$response = $response[0];
+			if($response && is_array($response) && sizeof($response))
+			{
+				$response = $response[0];
+			}
 			return $response;
 		}
 		
