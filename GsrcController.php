@@ -66,7 +66,7 @@ namespace application\plugin\gsrc
 			// Do nothing
 		}
 		
-		private function getIndividualRecord($data, $request=null)
+		protected function getIndividualRecord($data, $request=null)
 		{
 			// Trigger a get hook
 			$this->onBeforeGet($data, $request);
@@ -180,7 +180,7 @@ namespace application\plugin\gsrc
 			// Do nothing
 		}
 		
-		private function setIndividualRecord($data, $request)
+		protected function setIndividualRecord($data, $request)
 		{
 			// Trigger a set hook
 			$this->onBeforeSet($data);
@@ -268,7 +268,7 @@ namespace application\plugin\gsrc
 			// Do nothing
 		}
 		
-		private function removeIndividualRecord($data)
+		protected function removeIndividualRecord($data)
 		{
 			// Trigger a remove hook
 			$this->onBeforeRemove($data);
