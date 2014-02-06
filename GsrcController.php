@@ -115,12 +115,22 @@ namespace application\plugin\gsrc
 			
 			$result = $this->plugin->MvcQuery->query($queryObject);
 			
-			if(!$query) {
+			if($query)
+			{
+				// Trigger a get hook
+				foreach($result as $i=>$record)
+				{
+					$this->onAfterGet($record);
+					$result[$i] = $record;
+				}
+			}
+			else
+			{
 				//TODO What do we want to do if there are no results?
 				if(sizeof($result) == 0)
 				{
 					// Trigger a get hook
-					$this->onAfterGet($data);
+					$this->onAfterGet($result);
 					return false;
 				}
 				if(sizeof($result) != 1)
@@ -138,9 +148,6 @@ namespace application\plugin\gsrc
 				$result = $result[0];
 				$result['_type'] = $data->_type;
 			}
-
-			// Trigger a get hook
-			$this->onAfterGet($data);
 
 			return $result; 
 		}
