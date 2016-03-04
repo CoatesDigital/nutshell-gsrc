@@ -217,7 +217,7 @@ namespace application\plugin\gsrc
 			$result = $this->plugin->MvcQuery->query($queryObject);
 
 			// Trigger a set hook
-			$this->onAfterSet($result);			
+			$this->onAfterSet($data);			
 			
 			
 			$newRequestData = new MvcQueryObject();
